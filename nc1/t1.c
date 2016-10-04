@@ -18,9 +18,20 @@
 #include <libyang/libyang.h>
 
 
+#include <session_client.h>
 #include <session_server.h>
+#include <messages_server.h> 
+#include <messages_client.h> 
+#include <session.h> 
 
+
+// #include <session_p.h>
+// #include <messages_p.h>
+
+struct nc_session *server_session;
+struct nc_session *client_session;
 struct ly_ctx *ctx;
+
 
 static int
 setup_server(void **state)
@@ -46,10 +57,48 @@ teardown_server(void **state)
     return 0;
 }
 
-static void
-test_dummy(void **state)
+
+
+struct nc_server_reply *
+my_get_rpc_clb(struct lyd_node *rpc, struct nc_session *session)
 {
-    (void)state;
+    assert_string_equal(rpc->schema->name, "get");
+    assert_ptr_equal(session, server_session);
+
+    return nc_server_reply_ok();
+}
+
+struct nc_server_reply *
+my_getconfig_rpc_clb(struct lyd_node *rpc, struct nc_session *session)
+{
+    struct lyd_node *data;
+
+    assert_string_equal(rpc->schema->name, "get-config");
+    assert_ptr_equal(session, server_session);
+
+    data = lyd_new_path(NULL, nc_session_get_ctx(session), 
+    					"/ietf-netconf:get-config/data", NULL, 
+    					LYD_PATH_OPT_OUTPUT);
+    assert_non_null(data);
+
+    return nc_server_reply_data(data, NC_PARAMTYPE_FREE);
+}
+
+static int
+setup_sessions(void **state)
+{
+    
+    
+
+    return 0;
+}
+
+static int
+teardown_sessions(void **state)
+{
+    
+
+    return 0;
 }
 
 

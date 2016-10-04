@@ -2,7 +2,7 @@
 
 # usr/local/include/libnetconf 
 CFLAGS := -std=c99 -O2 -I/usr/local/include/libnetconf2 
- 
+
 
 all: ncf_server  
 
@@ -11,10 +11,11 @@ debug: ncf_server
 
 
 clean:
-	rm shm_server shm_client 
+	rm ncf_server ncf_client 
+
 
 ncf_server: t1.c  
-	gcc $? $(CFLAGS) -o $@
+	gcc $? $(CFLAGS) -lcmocka -lnetconf2 -lyang -o $@
 
 
 
