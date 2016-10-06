@@ -105,6 +105,32 @@ teardown_sessions(void **state)
 
 int main() 
 { 
+	
+	//ly_ctx_set_searchdir(&ctx)
+    ctx = ly_ctx_new("/home/aurora/models");
+    assert_non_null(ctx);
+
+    ly_ctx_set_searchdir(ctx, "/home/aurora/models/ietf"); 
+	lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf.yang", 
+		 		LYS_IN_YANG); 
+
+	lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf-monitoring.yang", 
+		 		LYS_IN_YANG); 
+
+    nc_server_init(ctx);
+
+
+
+
+
+
+
+
+
+    nc_server_destroy();
+    ly_ctx_destroy(ctx, NULL);
+
+
 	printf("hello world\n"); 
 	return 0; 
 } 
