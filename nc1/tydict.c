@@ -94,8 +94,9 @@ static int
 setup_f(void **state)
 {
     (void) state; /* unused */
-    char *yang_file = TESTS_DIR"/api/files/a.yin";
-    char *yang_folder = TESTS_DIR"/api/files";
+   
+    char *yang_file = "./files/a.yin";
+    char *yang_folder = "./files";
     int rc;
 
     rc = generic_init(yang_file, yang_folder);
