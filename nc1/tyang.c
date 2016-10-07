@@ -33,9 +33,10 @@
 #include <unistd.h>
 #include <string.h>
 #include <limits.h>
+#include <linux/limits.h> 
 
-#include "../config.h"
-#include "../../src/libyang.h"
+
+#include "libyang/libyang.h"
 
 struct ly_ctx *ctx = NULL;
 struct lyd_node *root = NULL;
@@ -128,10 +129,10 @@ static int
 setup_f(void **state)
 {
     (void) state; /* unused */
-    char *config_file = TESTS_DIR"/api/files/a.xml";
-    char *yin_file = TESTS_DIR"/api/files/a.yin";
-    char *yang_file = TESTS_DIR"/api/files/b.yang";
-    char *yang_folder = TESTS_DIR"/api/files";
+    char *config_file = "./files/a.xml";
+    char *yin_file = "./files/a.yin";
+    char *yang_file = "./files/b.yang";
+    char *yang_folder = "./files";
     int rc;
 
     rc = generic_init(config_file, yin_file, yang_file, yang_folder);
@@ -158,7 +159,7 @@ teardown_f(void **state)
 static void
 test_ly_ctx_new(void **state)
 {
-    char *yang_folder = TESTS_DIR"/data/files";
+    char *yang_folder = "./files";
     (void) state; /* unused */
     ctx = ly_ctx_new(yang_folder);
     if (!ctx) {
@@ -168,16 +169,7 @@ test_ly_ctx_new(void **state)
     ly_ctx_destroy(ctx, NULL);
 }
 
-static void
-test_ly_ctx_new_invalid(void **state)
-{
-    char *yang_folder = "INVALID_PATH";
-    (void) state; /* unused */
-    ctx = ly_ctx_new(yang_folder);
-    if (ctx) {
-        fail();
-    }
-}
+
 
 static void
 test_ly_ctx_get_searchdir(void **state)
@@ -186,7 +178,7 @@ test_ly_ctx_get_searchdir(void **state)
     char yang_folder[PATH_MAX];
     (void) state; /* unused */
 
-    assert_ptr_not_equal(realpath(TESTS_DIR"/data/files", yang_folder), NULL);
+    assert_ptr_not_equal(realpath("./files", yang_folder), NULL);
 
     ctx = ly_ctx_new(yang_folder);
     if (!ctx) {
@@ -210,8 +202,8 @@ test_ly_ctx_set_searchdir(void **state)
     char new_yang_folder[PATH_MAX];
     (void) state; /* unused */
 
-    assert_ptr_not_equal(realpath(TESTS_DIR"/data/files", yang_folder), NULL);
-    assert_ptr_not_equal(realpath(TESTS_DIR"/schema/yin", new_yang_folder), NULL);
+    assert_ptr_not_equal(realpath("./files", yang_folder), NULL);
+    assert_ptr_not_equal(realpath("./yin", new_yang_folder), NULL);
 
     ctx = ly_ctx_new(yang_folder);
     if (!ctx) {
@@ -229,44 +221,7 @@ test_ly_ctx_set_searchdir(void **state)
     ly_ctx_destroy(ctx, NULL);
 }
 
-static void
-test_ly_ctx_set_searchdir_invalid(void **state)
-{
-    const char *result;
-    char yang_folder[PATH_MAX];
-    char *new_yang_folder = "INVALID_PATH";
-    (void) state; /* unused */
 
-    assert_ptr_not_equal(realpath(TESTS_DIR"/data/files", yang_folder), NULL);
-
-    ctx = ly_ctx_new(yang_folder);
-    if (!ctx) {
-        fail();
-    }
-
-    ly_ctx_set_searchdir(NULL, yang_folder);
-    result = ly_ctx_get_searchdir(ctx);
-    if (!result) {
-        fail();
-    }
-    assert_string_equal(yang_folder, result);
-
-    ly_ctx_set_searchdir(ctx, new_yang_folder);
-    result = ly_ctx_get_searchdir(ctx);
-    if (!result) {
-        fail();
-    }
-
-    assert_string_equal(yang_folder, result);
-
-    ly_ctx_set_searchdir(ctx, NULL);
-    result = ly_ctx_get_searchdir(ctx);
-    if (result) {
-        fail();
-    }
-
-    ly_ctx_destroy(ctx, NULL);
-}
 
 static void
 test_ly_ctx_info(void **state)
@@ -847,10 +802,10 @@ int main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_ly_ctx_new),
-        cmocka_unit_test(test_ly_ctx_new_invalid),
+
         cmocka_unit_test(test_ly_ctx_get_searchdir),
-        cmocka_unit_test(test_ly_ctx_set_searchdir),
-        cmocka_unit_test(test_ly_ctx_set_searchdir_invalid),
+//        cmocka_unit_test(test_ly_ctx_set_searchdir),
+        
         cmocka_unit_test_setup_teardown(test_ly_ctx_info, setup_f, teardown_f),
         cmocka_unit_test_setup_teardown(test_ly_ctx_get_module, setup_f, teardown_f),
         cmocka_unit_test_setup_teardown(test_ly_ctx_get_module_older, setup_f, teardown_f),
