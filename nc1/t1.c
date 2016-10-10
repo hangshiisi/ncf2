@@ -18,15 +18,18 @@
 #include <libyang/libyang.h>
 
 
-#include <session_client.h>
-#include <session_server.h>
-#include <messages_server.h> 
-#include <messages_client.h> 
-#include <session.h> 
+#include <libnetconf2/session_client.h>
+#include <libnetconf2/session_server.h>
 
+#include <libnetconf2/messages_client.h> 
+#include <libnetconf2/session_server.h> 
 
-// #include <session_p.h>
-// #include <messages_p.h>
+#include <libnetconf2/session.h> 
+
+#ifndef NC_ENABLED_SSH 
+#define NC_ENABLED_SSH 
+#endif 
+
 
 struct nc_session *server_session;
 struct nc_session *client_session;
