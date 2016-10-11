@@ -30,3 +30,8 @@ tyang: tyang.c
 
 tserver: test_server_thread.c  
 	gcc $? $(CFLAGS) -lcmocka -lnetconf2 -lyang -lpthread -o $@
+
+
+tsshd: tsshd.c  
+	gcc $? $(CFLAGS) -lcmocka -lnetconf2 -lyang -lpthread -lssh -o $@
+

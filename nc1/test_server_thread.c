@@ -20,12 +20,12 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include <libyang/libyang.h>
+
+/* needed by libnetconf2 lib */ 
 #ifndef NC_ENABLED_SSH 
 #define NC_ENABLED_SSH
 #endif 
-
-#include <libyang/libyang.h>
-
 #include <libnetconf2/session_client.h>
 #include <libnetconf2/session_server.h>
 #include <libnetconf2/log.h>
@@ -122,7 +122,7 @@ ssh_endpt_set_hostkey_thread(void *arg)
 
     pthread_barrier_wait(&barrier);
 
-    ret = nc_server_ssh_endpt_set_hostkey("main", "/data/key_dsa");
+    ret = nc_server_ssh_endpt_set_hostkey("main", "/home/aurora/aurora_pub_key");
     nc_assert(!ret);
 
     return NULL;
@@ -192,7 +192,7 @@ ssh_endpt_add_authkey_thread(void *arg)
 
     pthread_barrier_wait(&barrier);
 
-    ret = nc_server_ssh_endpt_add_authkey("main", "/data/key_rsa.pub", "test3");
+    ret = nc_server_ssh_endpt_add_authkey("main", "/home/aurora/aurora_pub_key", "aurora");
     nc_assert(!ret);
 
     return NULL;
@@ -206,7 +206,7 @@ ssh_endpt_del_authkey_thread(void *arg)
 
     pthread_barrier_wait(&barrier);
 
-    ret = nc_server_ssh_endpt_del_authkey("main", "/data/key_ecdsa.pub", "test2");
+    ret = nc_server_ssh_endpt_del_authkey("main", "/home/aurora/aurora_pub_key", "aurora");
     nc_assert(!ret);
 
     return NULL;
@@ -238,7 +238,7 @@ ssh_client_thread(void *arg)
     ret = nc_client_ssh_set_username("test");
     nc_assert(!ret);
 
-    ret = nc_client_ssh_add_keypair("/data/key_dsa.pub", "/data/key_dsa");
+    ret = nc_client_ssh_add_keypair("/home/aurora/aurora_pub_key", "aurora");
     nc_assert(!ret);
 
     nc_client_ssh_set_auth_pref(NC_SSH_AUTH_PUBLICKEY, 1);
@@ -288,7 +288,7 @@ client_fork(void)
     if (!(pids[clients] = fork())) {
         nc_client_init();
 
-        ret = nc_client_set_schema_searchpath("/../schemas");
+        ret = nc_client_set_schema_searchpath("../schemas");
         nc_assert(!ret);
 
         /* close write */
