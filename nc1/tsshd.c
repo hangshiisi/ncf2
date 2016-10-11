@@ -37,10 +37,15 @@ clients must be made or how a client should react.
 #endif
 
 static int auth_password(char *user, char *password){
+    printf("hello returned from authentication password %s, %s\n", 
+    	  	user, password); 
+
+
     if(strcmp(user,"aris"))
         return 0;
     if(strcmp(password,"lala"))
         return 0;
+
     return 1; // authenticated
 }
 
@@ -198,6 +203,8 @@ int main(int argc, char **argv){
                         printf("User %s wants to auth with pass %s\n",
                                ssh_message_auth_user(message),
                                ssh_message_auth_password(message));
+
+
                         if(auth_password(ssh_message_auth_user(message),
                            ssh_message_auth_password(message))){
                                auth=1;
@@ -217,11 +224,14 @@ int main(int argc, char **argv){
         }
         ssh_message_free(message);
     } while (!auth);
+
+    printf(" returned from authentication users ! \n"); 
     if(!auth){
         printf("auth error: %s\n",ssh_get_error(session));
         ssh_disconnect(session);
         return 1;
     }
+
     do {
         message=ssh_message_get(session);
         if(message){
@@ -237,11 +247,21 @@ int main(int argc, char **argv){
             ssh_message_free(message);
         }
     } while(message && !chan);
+
+    printf(" 1  returned from authentication users ! \n"); 
+
+
     if(!chan){
         printf("error : %s\n",ssh_get_error(session));
         ssh_finalize();
         return 1;
     }
+
+
+    printf(" 2  returned from authentication users ! \n"); 
+
+
+
     do {
         message=ssh_message_get(session);
         if(message && ssh_message_type(message)==SSH_REQUEST_CHANNEL &&
@@ -257,6 +277,11 @@ int main(int argc, char **argv){
         }
         ssh_message_free(message);
     } while (message && !sftp);
+
+    printf(" 3  returned from authentication users ! \n"); 
+
+
+
     if(!sftp){
         printf("error : %s\n",ssh_get_error(session));
         return 1;
@@ -277,3 +302,7 @@ int main(int argc, char **argv){
 
 
 
+/* 
+ * need to add a user, 
+ * e.g. aris/lala into the system 
+ */ 
