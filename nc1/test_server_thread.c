@@ -30,6 +30,8 @@
 #include <libnetconf2/session_server.h>
 #include <libnetconf2/log.h>
 
+#define KEYS_FOLDER "/etc/ssh/"
+
 /* millisec */
 #define NC_ACCEPT_TIMEOUT 5000
 /* millisec */
@@ -54,11 +56,14 @@ server_thread(void *arg)
     ps = nc_ps_new();
     nc_assert(ps);
 
-    pthread_barrier_wait(&barrier);
+    printf("inside function: %s line %d \n", __FUNCTION__, __LINE__); 
 
+    pthread_barrier_wait(&barrier);
 
     msgtype = nc_accept(NC_ACCEPT_TIMEOUT, &session);
     nc_assert(msgtype == NC_MSG_HELLO);
+
+    printf("inside function: %s line %d \n", __FUNCTION__, __LINE__); 
 
     nc_ps_add_session(ps, session);
     ret = nc_ps_poll(ps, NC_PS_POLL_TIMEOUT, NULL);
@@ -229,23 +234,31 @@ ssh_client_thread(void *arg)
     struct nc_session *session;
 
     ret = read(read_pipe, buf, 9);
+
     nc_assert(ret == 9);
     nc_assert(!strncmp(buf, "ssh_ready", 9));
 
     /* skip the knownhost check */
     nc_client_ssh_set_auth_hostkey_check_clb(ssh_hostkey_check_clb);
 
-    ret = nc_client_ssh_set_username("test");
+    ret = nc_client_ssh_set_username("aurora");
     nc_assert(!ret);
 
-    ret = nc_client_ssh_add_keypair("/home/aurora/aurora_pub_key", "aurora");
+    ret = nc_client_ssh_add_keypair("/home/aurora/aurora_pub_key", 
+                                    "/home/aurora/aurora_private_key");
     nc_assert(!ret);
 
     nc_client_ssh_set_auth_pref(NC_SSH_AUTH_PUBLICKEY, 1);
     nc_client_ssh_set_auth_pref(NC_SSH_AUTH_PASSWORD, -1);
     nc_client_ssh_set_auth_pref(NC_SSH_AUTH_INTERACTIVE, -1);
 
+    printf("before connection is setup %s %d \n", __FUNCTION__, __LINE__); 
+    
+
     session = nc_connect_ssh("127.0.0.1", 6001, NULL);
+
+    printf("after connection is setup %s %d \n", __FUNCTION__, __LINE__); 
+
     nc_assert(session);
 
     nc_session_free(session, NULL);
@@ -254,7 +267,7 @@ ssh_client_thread(void *arg)
     return NULL;
 }
 
-
+/*
 static void *(*thread_funcs[])(void *) = {
     server_thread,
     ssh_add_endpt_thread,
@@ -268,6 +281,12 @@ static void *(*thread_funcs[])(void *) = {
     ssh_endpt_add_authkey_thread,
     ssh_endpt_del_authkey_thread,
 };
+*/ 
+static void *(*thread_funcs[])(void *) = {
+   server_thread,
+ //   ssh_add_endpt_thread,
+};
+
 
 const int thread_count = sizeof thread_funcs / sizeof *thread_funcs;
 
@@ -316,15 +335,18 @@ main(void)
 
     client_fork();
 
-    ctx = ly_ctx_new("../schemas");
+    //ctx = ly_ctx_new("../schemas");
+    ctx = ly_ctx_new("/home/aurora/models/ietf"); 
+
     nc_assert(ctx);
+ 
     ly_ctx_load_module(ctx, "ietf-netconf", NULL);
 
-    lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf.yang", 
-                    LYS_IN_YANG); 
+    //lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf.yang", 
+    //                LYS_IN_YANG); 
 
-    lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf-monitoring.yang", 
-                    LYS_IN_YANG); 
+    //lys_parse_path(ctx, "/home/aurora/models/ietf/ietf-netconf-monitoring.yang", 
+    //                LYS_IN_YANG); 
 
 
     nc_server_init(ctx);
@@ -343,7 +365,7 @@ main(void)
     printf("Hello world 1.3 \n"); 
     nc_assert(!ret);
     printf("Hello world 1.4 \n"); 
-    ret = nc_server_ssh_endpt_set_hostkey("main", "/home/aurora/.ssh/id_rsa");
+    ret = nc_server_ssh_endpt_set_hostkey("main", KEYS_FOLDER "ssh_host_rsa_key");
     printf("Hello world 1.5 \n"); 
     nc_assert(!ret);
     printf("Hello world 1.6 \n"); 
@@ -359,7 +381,8 @@ main(void)
 
 
     /* for ssh_endpt_del_authkey */
-    ret = nc_server_ssh_endpt_add_authkey("main", "/data/key_ecdsa.pub", "test2");
+    ret = nc_server_ssh_endpt_add_authkey("main", "/home/aurora/.ssh/id_rsa.pub", "aurora");
+    //ret = nc_server_ssh_endpt_add_authkey("main", "/data/key_ecdsa.pub", "test2");
     nc_assert(!ret);
 
     /* for ssh_del_endpt */
